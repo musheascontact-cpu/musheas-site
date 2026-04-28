@@ -1,10 +1,16 @@
 'use server';
 
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 import sharp from 'sharp';
 
-export async function uploadImage(formData: FormData) {
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+export async function uploadImage(formData: FormData): Promise<{success: boolean, url?: string, error?: string}> {
   try {
     const file = formData.get('file') as File;
     
@@ -20,12 +26,8 @@ export async function uploadImage(formData: FormData) {
     const isSvg = fileType === 'image/svg+xml' || file.name.endsWith('.svg');
 
     let finalBuffer: any = buffer;
-    let fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
-
-    if (isSvg) {
-      // 🎨 Keep SVGs as is
-      fileName += '.svg';
-    } else {
+    
+    if (!isSvg) {
       // 🚀 Optimize raster images with Sharp (WebP conversion)
       try {
         finalBuffer = await sharp(buffer)
@@ -35,26 +37,39 @@ export async function uploadImage(formData: FormData) {
           })
           .webp({ quality: 80, effort: 6 })
           .toBuffer();
-        fileName += '.webp';
       } catch (sharpError) {
         console.warn('Sharp optimization failed, using original buffer', sharpError);
-        const originalExt = file.name.split('.').pop() || 'png';
-        fileName += `.${originalExt}`;
       }
     }
     
-    // Path to save the file
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    const filePath = join(uploadDir, fileName);
+    // Upload to Cloudinary
+    const cloudinaryOptions: any = {
+      folder: 'musheas',
+      resource_type: isSvg ? 'raw' : 'image',
+    };
 
-    // Ensure the directory exists
-    await mkdir(uploadDir, { recursive: true });
+    if (!isSvg) {
+      cloudinaryOptions.format = 'webp';
+      cloudinaryOptions.quality = 'auto';
+    }
 
-    // Write the file
-    await writeFile(filePath, finalBuffer);
+    return new Promise<{success: boolean, url?: string, error?: string}>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        cloudinaryOptions,
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            resolve({ success: false, error: 'Cloudinary upload failed' });
+          } else {
+            resolve({ success: true, url: result?.secure_url });
+          }
+        }
+      );
+      
+      // End the stream with the buffer
+      uploadStream.end(finalBuffer);
+    });
 
-    // Return the public URL
-    return { success: true, url: `/uploads/${fileName}` };
   } catch (error: any) {
     console.error('Unexpected error during image optimization and upload:', error);
     return { success: false, error: error.message || 'An unexpected error occurred' };
