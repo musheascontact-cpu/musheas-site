@@ -15,6 +15,7 @@ import {
   Area
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatPrice } from '@/lib/utils';
 
 export function RevenueChart({ data, lang }: { data: any[], lang: string }) {
   const isAr = lang === 'ar';
@@ -50,7 +51,7 @@ export function RevenueChart({ data, lang }: { data: any[], lang: string }) {
             />
             <Tooltip 
               contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
-              formatter={(value: any) => [`${value.toLocaleString()} DZD`, isAr ? 'المبلغ' : 'Amount']}
+              formatter={(value: any) => [`${formatPrice(value, lang)} DZD`, isAr ? 'المبلغ' : 'Amount']}
             />
             <Area 
               type="monotone" 

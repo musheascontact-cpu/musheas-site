@@ -2,71 +2,186 @@
 
 import { useState } from 'react';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from '@/actions/orders';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import { 
+  Loader2, 
+  CheckCircle2, 
+  Clock, 
+  Package, 
+  Truck, 
+  XCircle, 
+  ChevronRight,
+  MoreHorizontal
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const statusConfig: Record<string, { label_ar: string; label_en: string; className: string }> = {
-  pending:    { label_ar: 'قيد الانتظار', label_en: 'Pending',    className: 'text-yellow-600' },
-  processing: { label_ar: 'قيد المعالجة', label_en: 'Processing', className: 'text-blue-600' },
-  shipped:    { label_ar: 'تم الشحن',      label_en: 'Shipped',    className: 'text-purple-600' },
-  delivered:  { label_ar: 'تم التسليم',    label_en: 'Delivered',  className: 'text-green-600' },
-  cancelled:  { label_ar: 'ملغي',           label_en: 'Cancelled',  className: 'text-red-600' },
+const statusConfig: Record<string, { 
+  label_ar: string; 
+  label_en: string; 
+  color: string;
+  bgColor: string;
+  icon: any;
+  next?: string;
+}> = {
+  pending: { 
+    label_ar: 'قيد الانتظار', 
+    label_en: 'Pending',    
+    color: 'text-amber-600', 
+    bgColor: 'bg-amber-100',
+    icon: Clock,
+    next: 'processing'
+  },
+  processing: { 
+    label_ar: 'قيد المعالجة', 
+    label_en: 'Processing', 
+    color: 'text-blue-600', 
+    bgColor: 'bg-blue-100',
+    icon: Package,
+    next: 'shipped'
+  },
+  shipped: { 
+    label_ar: 'تم الشحن',      
+    label_en: 'Shipped',    
+    color: 'text-purple-600', 
+    bgColor: 'bg-purple-100',
+    icon: Truck,
+    next: 'delivered'
+  },
+  delivered: { 
+    label_ar: 'تم التسليم',    
+    label_en: 'Delivered',  
+    color: 'text-emerald-600', 
+    bgColor: 'bg-emerald-100',
+    icon: CheckCircle2 
+  },
+  cancelled: { 
+    label_ar: 'ملغي',           
+    label_en: 'Cancelled',  
+    color: 'text-rose-600', 
+    bgColor: 'bg-rose-100',
+    icon: XCircle 
+  },
 };
 
 interface OrderStatusSelectProps {
   orderId: string;
   currentStatus: string;
   lang: string;
+  onStatusChange?: (newStatus: string) => void;
 }
 
-export function OrderStatusSelect({ orderId, currentStatus, lang }: OrderStatusSelectProps) {
+export function OrderStatusSelect({ orderId, currentStatus, lang, onStatusChange }: OrderStatusSelectProps) {
   const [status, setStatus] = useState(currentStatus);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const isAr = lang === 'ar';
 
+  const config = statusConfig[status] || statusConfig.pending;
+  const nextStatus = config.next;
+  const nextConfig = nextStatus ? statusConfig[nextStatus] : null;
+
   async function handleStatusChange(newStatus: string) {
+    if (newStatus === status) return;
+    
     setIsUpdating(true);
     const result = await updateOrderStatus(orderId, newStatus);
     setIsUpdating(false);
 
     if (result.success) {
       setStatus(newStatus);
+      if (onStatusChange) onStatusChange(newStatus);
       toast({
-        title: isAr ? 'تم التحديث' : 'Updated',
-        description: isAr ? 'تم تحديث حالة الطلب بنجاح' : 'Order status updated successfully',
+        title: isAr ? 'تم تحديث المرحلة' : 'Stage Updated',
+        description: isAr 
+          ? `انتقل الطلب إلى: ${statusConfig[newStatus]?.label_ar}` 
+          : `Order moved to: ${statusConfig[newStatus]?.label_en}`,
       });
     } else {
       toast({
         variant: 'destructive',
-        title: isAr ? 'خطأ' : 'Error',
+        title: isAr ? 'خطأ في التحديث' : 'Update Failed',
         description: result.error,
       });
     }
   }
 
+  const Icon = config.icon;
+
   return (
     <div className="flex items-center gap-2">
-      {isUpdating && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-      <Select value={status} onValueChange={handleStatusChange} disabled={isUpdating}>
-        <SelectTrigger className={`h-8 w-[130px] text-xs font-medium ${statusConfig[status]?.className || ''}`}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(statusConfig).map(([key, config]) => (
-            <SelectItem key={key} value={key} className="text-xs">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            disabled={isUpdating}
+            className={`h-9 px-3 border-none shadow-sm transition-all duration-300 ${config.bgColor} ${config.color} hover:${config.bgColor} hover:brightness-95 rounded-full flex items-center gap-2 group`}
+          >
+            {isUpdating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Icon className="h-4 w-4" />
+            )}
+            <span className="text-xs font-bold">
               {isAr ? config.label_ar : config.label_en}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+            </span>
+            <MoreHorizontal className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+          </Button>
+        </DropdownMenuTrigger>
+        
+        <DropdownMenuContent align={isAr ? 'right' : 'left'} className="w-56 p-2 rounded-xl">
+          {nextConfig && (
+            <>
+              <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-2 py-1.5">
+                {isAr ? 'المرحلة التالية' : 'Next Stage'}
+              </DropdownMenuLabel>
+              <DropdownMenuItem 
+                onClick={() => handleStatusChange(nextStatus!)}
+                className="flex items-center justify-between p-2 cursor-pointer hover:bg-primary/5 rounded-lg group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${nextConfig.bgColor} ${nextConfig.color}`}>
+                    <nextConfig.icon className="h-4 w-4" />
+                  </div>
+                  <span className="font-semibold text-sm">
+                    {isAr ? nextConfig.label_ar : nextConfig.label_en}
+                  </span>
+                </div>
+                <ChevronRight className={`h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform ${isAr ? 'rotate-180 group-hover:-translate-x-1' : ''}`} />
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-2" />
+            </>
+          )}
+
+          <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-2 py-1.5">
+            {isAr ? 'تغيير الحالة إلى' : 'Change Status To'}
+          </DropdownMenuLabel>
+          
+          {Object.entries(statusConfig)
+            .filter(([key]) => key !== status && key !== nextStatus)
+            .map(([key, itemConfig]) => (
+              <DropdownMenuItem 
+                key={key} 
+                onClick={() => handleStatusChange(key)}
+                className="flex items-center gap-3 p-2 cursor-pointer rounded-lg mb-1 last:mb-0"
+              >
+                <itemConfig.icon className={`h-4 w-4 ${itemConfig.color}`} />
+                <span className="text-sm">
+                  {isAr ? itemConfig.label_ar : itemConfig.label_en}
+                </span>
+              </DropdownMenuItem>
+            ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

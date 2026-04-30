@@ -60,7 +60,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: L
 
   const productsWithPromotions = applyPromotionsToProducts(products, activePromos as any);
 
-  const featuredB2BProducts = productsWithPromotions.filter(p => p.type === 'b2b').slice(0, 5);
+  const featuredB2BProducts = productsWithPromotions.filter(p => p.type === 'b2b' || p.type === 'rd').slice(0, 5);
   const featuredB2CProducts = productsWithPromotions.filter(p => p.type === 'b2c').slice(0, 5);
   const allFeaturedProducts = productsWithPromotions.filter(p => p.is_featured);
 

@@ -3,12 +3,13 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Mail, MessageSquare, Phone, Calendar, Clock, User, ArrowRight } from "lucide-react"
+import { Mail, MessageSquare, Phone, Calendar, Clock, User, ArrowRight, PackageCheck } from "lucide-react"
 import { Locale } from '@/lib/i18n-config';
 import { Button } from '@/components/ui/button';
 
 export default async function DashboardInquiries({ params: { lang } }: { params: { lang: Locale } }) {
   const inquiries = await prisma.inquiry.findMany({
+    include: { product: true },
     orderBy: { created_at: 'desc' }
   });
 
@@ -75,6 +76,14 @@ export default async function DashboardInquiries({ params: { lang } }: { params:
                     </div>
 
                     <div className="p-6 rounded-2xl bg-muted/50 border border-border/50">
+                      {inquiry.product && (
+                        <div className="mb-4 inline-flex items-center gap-2 p-2 px-3 rounded-xl bg-primary/10 border border-primary/20">
+                          <PackageCheck className="h-4 w-4 text-primary" />
+                          <span className="text-xs font-black uppercase text-primary">
+                            Interested in: {(inquiry.product.name as any)[lang] || (inquiry.product.name as any)['en']}
+                          </span>
+                        </div>
+                      )}
                       <p className="text-foreground leading-relaxed font-medium">
                         {inquiry.message}
                       </p>

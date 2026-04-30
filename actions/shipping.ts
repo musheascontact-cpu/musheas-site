@@ -39,6 +39,40 @@ export async function updateShippingFee(orderId: string, shippingFee: number) {
 
 export async function updateDeliveryType(orderId: string, deliveryType: string) {
   try {
+    if (deliveryType === 'office') {
+      const order = await prisma.order.findUnique({
+        where: { id: orderId }
+      });
+      
+      if (order) {
+        const wilayaCode = Number(order.customer_wilaya) || 1;
+        const communes = await SwiftExpressService.getCommunes(wilayaCode);
+        
+        if (Array.isArray(communes)) {
+          const normalize = (str: string) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+          const normalizedInput = normalize(order.customer_city || '');
+          
+          let hasStopDesk = false;
+          const exact = communes.find((c: any) => normalize(c.nom) === normalizedInput);
+          if (exact) {
+            hasStopDesk = exact.has_stop_desk === 1;
+          } else {
+            const partial = communes.find((c: any) => normalize(c.nom).includes(normalizedInput) || normalizedInput.includes(normalize(c.nom)));
+            if (partial) {
+              hasStopDesk = partial.has_stop_desk === 1;
+            }
+          }
+
+          if (!hasStopDesk) {
+            return { 
+              success: false, 
+              error: 'لا يمكن تغيير التوصيل للمكتب، البلدية الحالية للزبون لا تتوفر على مكتب توصيل.' 
+            };
+          }
+        }
+      }
+    }
+
     await prisma.order.update({
       where: { id: orderId },
       data: { delivery_type: deliveryType }
@@ -61,6 +95,16 @@ export async function getShippingRates() {
     return { success: true, fees: rates };
   } catch (error: any) {
     console.error('Error fetching shipping rates:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getCommunesByWilaya(wilayaId: number) {
+  try {
+    const communes = await SwiftExpressService.getCommunes(wilayaId);
+    return { success: true, communes };
+  } catch (error: any) {
+    console.error('Error fetching communes:', error);
     return { success: false, error: error.message };
   }
 }

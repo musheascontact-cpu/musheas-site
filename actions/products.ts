@@ -5,6 +5,8 @@ import { Product } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { applyPromotionsToProducts, applyPromotionToProduct } from '@/lib/promotions-utils';
 import type { Promotion } from '@/actions/promotions';
+import { productSchema } from '@/lib/validations/product';
+import { z } from 'zod';
 
 export async function getPaginatedProducts({
   page = 0,
@@ -20,7 +22,7 @@ export async function getPaginatedProducts({
   query?: string;
   category?: string;
   lang?: string;
-  type?: 'b2b' | 'b2c';
+  type?: 'b2b' | 'b2c' | 'rd';
   onlyVisible?: boolean;
 }) {
   const skip = page * limit;
@@ -30,7 +32,7 @@ export async function getPaginatedProducts({
   const [productsData, totalCount, activePromotionsData] = await Promise.all([
     prisma.product.findMany({
       where: {
-        type,
+        type: type === 'b2b' ? { in: ['b2b', 'rd'] } : type,
         ...(onlyVisible ? { is_visible: true } : {}),
         ...(category ? { category } : {}),
       },
@@ -40,7 +42,7 @@ export async function getPaginatedProducts({
     }),
     prisma.product.count({
       where: {
-        type,
+        type: type === 'b2b' ? { in: ['b2b', 'rd'] } : type,
         ...(onlyVisible ? { is_visible: true } : {}),
         ...(category ? { category } : {}),
       },
@@ -188,60 +190,80 @@ export async function getProductBySlug(slug: string) {
   };
 }
 
-export async function upsertProduct(formData: FormData) {
+
+
+/**
+ * Smart slug generator that handles collisions
+ */
+async function generateUniqueSlug(name: string, currentId?: string): Promise<string> {
+  let slug = name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove non-word chars
+    .replace(/[\s_]+/g, '-')  // Replace spaces/underscores with hyphens
+    .replace(/^-+|-+$/g, '');  // Trim hyphens
+
+  let uniqueSlug = slug;
+  let counter = 1;
+
+  while (true) {
+    const existing = await prisma.product.findUnique({
+      where: { slug: uniqueSlug },
+      select: { id: true }
+    });
+
+    if (!existing || existing.id === currentId) {
+      return uniqueSlug;
+    }
+
+    uniqueSlug = `${slug}-${counter}`;
+    counter++;
+  }
+}
+
+export async function upsertProduct(data: any) {
   try {
-    const id = formData.get('id') as string;
-    const name_en = formData.get('name_en') as string;
-    const name_ar = formData.get('name_ar') as string;
-    const slug = formData.get('slug') as string;
-    const description_en = formData.get('description_en') as string;
-    const description_ar = formData.get('description_ar') as string;
-    const price = parseFloat(formData.get('price') as string);
-    const sale_price = formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null;
-    const image_url = formData.get('image_url') as string;
-    const image_hint = formData.get('image_hint') as string;
-    const category = formData.get('category') as string;
-    const type = formData.get('type') as string;
-    const ingredients_en = formData.get('ingredients_en') as string;
-    const ingredients_ar = formData.get('ingredients_ar') as string;
-    const application_en = formData.get('application_en') as string;
-    const application_ar = formData.get('application_ar') as string;
-    const benefits_en = formData.get('benefits_en') as string;
-    const benefits_ar = formData.get('benefits_ar') as string;
-    const is_visible = formData.get('is_visible') === 'true';
-    const is_featured = formData.get('is_featured') === 'true';
+    // Validate with Zod
+    const validatedData = productSchema.parse(data);
+    const { id, ...productFields } = validatedData;
+
+    // Ensure slug is clean or generate one if missing
+    let slug = productFields.slug;
+    if (!slug || slug.trim() === '') {
+      slug = await generateUniqueSlug(productFields.name_en, id);
+    }
 
     const productData: any = {
-      name: { en: name_en, ar: name_ar },
+      name: { en: productFields.name_en, ar: productFields.name_ar },
       slug,
-      description: { en: description_en, ar: description_ar },
-      price,
-      sale_price,
-      image_url,
-      image_hint,
-      category,
-      type,
+      description: { en: productFields.description_en, ar: productFields.description_ar },
+      price: productFields.price,
+      sale_price: productFields.sale_price,
+      image_url: productFields.image_url,
+      image_hint: productFields.image_hint,
+      category: productFields.category,
+      type: productFields.type,
       ingredients: {
-        en: ingredients_en ? ingredients_en.split(',').map(s => s.trim()) : [],
-        ar: ingredients_ar ? ingredients_ar.split(',').map(s => s.trim()) : []
+        en: productFields.ingredients_en ? productFields.ingredients_en.split(',').map(s => s.trim()) : [],
+        ar: productFields.ingredients_ar ? productFields.ingredients_ar.split(',').map(s => s.trim()) : []
       },
-      application: { en: application_en, ar: application_ar },
+      application: { en: productFields.application_en, ar: productFields.application_ar },
       benefits: {
-        en: benefits_en ? benefits_en.split(',').map(s => s.trim()) : [],
-        ar: benefits_ar ? benefits_ar.split(',').map(s => s.trim()) : []
+        en: productFields.benefits_en ? productFields.benefits_en.split(',').map(s => s.trim()) : [],
+        ar: productFields.benefits_ar ? productFields.benefits_ar.split(',').map(s => s.trim()) : []
       },
-      is_visible,
-      is_featured,
+      is_visible: productFields.is_visible,
+      is_featured: productFields.is_featured,
     };
 
+    let result;
     if (id) {
-      await prisma.product.update({
+      result = await prisma.product.update({
         where: { id },
         data: productData
       });
     } else {
       const newId = `prod_${Math.random().toString(36).substring(2, 10)}`;
-      await prisma.product.create({
+      result = await prisma.product.create({
         data: { ...productData, id: newId }
       });
     }
@@ -250,23 +272,37 @@ export async function upsertProduct(formData: FormData) {
     revalidatePath('/[lang]/products', 'page');
     revalidatePath('/[lang]/shop', 'page');
 
-    return { success: true };
+    return { success: true, product: result };
   } catch (error: any) {
     console.error('Error upserting product:', error);
-    return { success: false, error: error.message };
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors[0].message };
+    }
+    return { success: false, error: error.message || 'Failed to save product' };
   }
 }
 
 export async function deleteProduct(id: string) {
   try {
+    // Check if product has dependencies (like orders)
+    // Prisma delete will fail anyway if there's a constraint, but we can be proactive
     await prisma.product.delete({
       where: { id }
     });
     
     revalidatePath('/[lang]/dashboard/products', 'page');
+    revalidatePath('/[lang]/products', 'page');
+    
     return { success: true };
   } catch (error: any) {
     console.error('Delete action failed:', error);
-    return { success: false, error: error.message };
+    let message = 'Failed to delete product';
+    
+    if (error.code === 'P2003') {
+      message = 'Cannot delete this product because it is linked to existing orders.';
+    }
+    
+    return { success: false, error: message };
   }
 }
+

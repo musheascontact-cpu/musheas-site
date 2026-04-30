@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import { WILAYAS } from '@/lib/algeria-data';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 interface OrderInvoiceProps {
   order: any;
@@ -123,8 +123,8 @@ export const OrderInvoice = forwardRef<HTMLDivElement, OrderInvoiceProps>(({ ord
                   <div className="text-[10px] font-bold opacity-40 uppercase tracking-widest mt-1">SKU: {item.product_id.split('-')[0].toUpperCase()}</div>
                 </td>
                 <td className="py-6 text-center text-lg font-black">{item.quantity}</td>
-                <td className="py-6 text-right text-lg font-bold">{item.price_at_time?.toLocaleString()}</td>
-                <td className="py-6 text-right text-lg font-black">{(item.quantity * item.price_at_time)?.toLocaleString()}</td>
+                <td className="py-6 text-right text-lg font-bold">{formatPrice(item.price_at_time, lang)}</td>
+                <td className="py-6 text-right text-lg font-black">{formatPrice(item.quantity * item.price_at_time, lang)}</td>
               </tr>
             ))}
           </tbody>
@@ -136,16 +136,16 @@ export const OrderInvoice = forwardRef<HTMLDivElement, OrderInvoiceProps>(({ ord
         <div className="w-80 space-y-4">
           <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
             <span className="opacity-40">{isAr ? 'المجموع الفرعي' : 'SUBTOTAL'}</span>
-            <span className="text-lg font-bold">{productsSubtotal.toLocaleString()} DZD</span>
+            <span className="text-lg font-bold">{formatPrice(productsSubtotal, lang)} DZD</span>
           </div>
           <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
             <span className="opacity-40">{isAr ? 'مصاريف التوصيل' : 'SHIPPING'}</span>
-            <span className="text-lg font-bold text-black/60">+ {shipping.toLocaleString()} DZD</span>
+            <span className="text-lg font-bold text-black/60">+ {formatPrice(shipping, lang)} DZD</span>
           </div>
           <div className="pt-6 border-t-4 border-black flex justify-between items-center">
             <span className="text-xs font-black uppercase tracking-[0.3em]">{isAr ? 'الإجمالي النهائي' : 'GRAND TOTAL'}</span>
             <div className="text-right">
-              <p className="text-4xl font-black leading-none">{total.toLocaleString()} <span className="text-xs font-bold opacity-40">DZD</span></p>
+              <p className="text-4xl font-black leading-none">{formatPrice(total, lang)} <span className="text-xs font-bold opacity-40">DZD</span></p>
             </div>
           </div>
         </div>

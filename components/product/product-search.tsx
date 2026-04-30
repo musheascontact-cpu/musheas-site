@@ -6,7 +6,7 @@ import { Search, Loader2, X } from 'lucide-react';
 import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { searchProducts } from '@/actions/products';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 export function ProductSearch({ placeholder, onSelect }: { placeholder: string, onSelect?: () => void }) {
   const searchParams = useSearchParams();
@@ -142,7 +142,7 @@ export function ProductSearch({ placeholder, onSelect }: { placeholder: string, 
                       {p.name[lang] || p.name.en}
                     </p>
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      {p.price.toLocaleString()} DZD
+                      {formatPrice(p.price, lang)} DZD
                     </p>
                   </div>
                 </Link>

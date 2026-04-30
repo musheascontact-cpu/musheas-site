@@ -23,6 +23,7 @@ import {
   Building2,
   Home,
   CheckCircle2,
+  XCircle,
   CreditCard,
   Edit2,
   Printer
@@ -44,6 +45,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { OrderStatusSelect } from './order-status-select';
+import { motion } from 'framer-motion';
 
 interface OrderDetailsDialogProps {
   orderId: string;
@@ -93,6 +96,12 @@ export function OrderDetailsDialog({ orderId, lang }: OrderDetailsDialogProps) {
         title: isAr ? 'تم تحديث النوع' : 'Type Updated',
         description: isAr ? 'تم تغيير نوع التوصيل بنجاح.' : 'Delivery type updated successfully.',
       });
+    } else {
+      toast({
+        variant: "destructive",
+        title: isAr ? 'خطأ' : 'Error',
+        description: result.error || (isAr ? 'فشل تحديث نوع التوصيل.' : 'Failed to update delivery type.'),
+      });
     }
     setIsUpdatingType(false);
   }
@@ -107,6 +116,16 @@ export function OrderDetailsDialog({ orderId, lang }: OrderDetailsDialogProps) {
   const handlePrint = () => {
     window.print();
   };
+
+  const steps = [
+    { key: 'pending', icon: Clock, labelAr: 'طلب جديد', labelEn: 'New Order' },
+    { key: 'processing', icon: Package, labelAr: 'قيد المعالجة', labelEn: 'Processing' },
+    { key: 'shipped', icon: Truck, labelAr: 'تم الشحن', labelEn: 'Shipped' },
+    { key: 'delivered', icon: CheckCircle2, labelAr: 'تم التسليم', labelEn: 'Delivered' },
+  ];
+
+  const currentStepIndex = steps.findIndex(s => s.key === order?.status);
+  const isCancelled = order?.status === 'cancelled';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -148,6 +167,52 @@ export function OrderDetailsDialog({ orderId, lang }: OrderDetailsDialogProps) {
           </div>
         ) : order ? (
           <div className="space-y-8 py-4">
+            {/* Smart Interactive Timeline */}
+            {!isCancelled && (
+              <div className="relative px-2 py-6">
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-muted -translate-y-1/2 z-0" />
+                <div 
+                  className="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 z-0 transition-all duration-1000 ease-in-out" 
+                  style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
+                />
+                <div className="relative z-10 flex justify-between">
+                  {steps.map((step, idx) => {
+                    const isActive = idx <= currentStepIndex;
+                    const isCurrent = idx === currentStepIndex;
+                    const StepIcon = step.icon;
+                    return (
+                      <div key={step.key} className="flex flex-col items-center gap-2">
+                        <motion.div 
+                          initial={false}
+                          animate={{
+                            scale: isCurrent ? 1.2 : 1,
+                            backgroundColor: isActive ? 'var(--primary)' : 'var(--muted)',
+                            color: isActive ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                          }}
+                          className={`h-10 w-10 rounded-full flex items-center justify-center shadow-lg transition-colors border-4 border-background`}
+                        >
+                          <StepIcon className="h-5 w-5" />
+                        </motion.div>
+                        <span className={`text-[10px] font-black uppercase tracking-tighter ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                          {isAr ? step.labelAr : step.labelEn}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {isCancelled && (
+              <div className="p-6 rounded-[2rem] bg-rose-500/10 border-2 border-rose-500/20 flex items-center gap-4 text-rose-600">
+                <XCircle className="h-8 w-8" />
+                <div>
+                  <h4 className="font-black uppercase tracking-widest text-sm">{isAr ? 'طلب ملغي' : 'Order Cancelled'}</h4>
+                  <p className="text-xs opacity-80">{isAr ? 'تم إلغاء هذا الطلب ولن يتم معالجته.' : 'This order has been cancelled and will not be processed.'}</p>
+                </div>
+              </div>
+            )}
+
             {/* Header Status Bar */}
             <div className="flex items-center justify-between p-4 rounded-3xl bg-muted/30 border border-border/50 shadow-inner">
               <div className="flex items-center gap-3">
@@ -156,11 +221,16 @@ export function OrderDetailsDialog({ orderId, lang }: OrderDetailsDialogProps) {
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
-                    {isAr ? 'حالة الطلب' : 'ORDER STATUS'}
+                    {isAr ? 'إدارة المرحلة' : 'MANAGE STAGE'}
                   </p>
-                  <Badge className="mt-0.5 font-black uppercase text-[10px] tracking-widest px-3 py-0">
-                    {order.status}
-                  </Badge>
+                  <div className="mt-1">
+                    <OrderStatusSelect 
+                      orderId={orderId} 
+                      currentStatus={order.status} 
+                      lang={lang} 
+                      onStatusChange={(newStatus) => setOrder({ ...order, status: newStatus })}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="text-right">

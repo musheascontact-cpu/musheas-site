@@ -20,21 +20,21 @@ function CarouselCustomNav({ isAr }: { isAr: boolean }) {
   const { scrollNext, scrollPrev, canScrollNext, canScrollPrev } = useCarousel();
   
   return (
-    <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex items-center gap-6 z-20">
+    <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
       <Button
         variant="outline"
         size="icon"
-        className="h-14 w-14 bg-white/5 border-white/10 hover:bg-primary hover:text-white hover:scale-110 rounded-full transition-all duration-300 shadow-xl"
+        className="h-10 w-10 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white rounded-full transition-all duration-300"
         onClick={isAr ? scrollNext : scrollPrev}
         disabled={isAr ? !canScrollNext : !canScrollPrev}
       >
-        {isAr ? <ArrowRight className="h-6 w-6" /> : <ArrowLeft className="h-6 w-6" />}
+        {isAr ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
       </Button>
 
-      <div className="flex gap-1.5 no-print">
-        <div className="h-1 w-24 rounded-full bg-white/10 overflow-hidden relative">
+      <div className="flex gap-1 no-print">
+        <div className="h-0.5 w-16 rounded-full bg-white/10 overflow-hidden relative">
           <motion.div 
-            className="absolute inset-0 bg-primary"
+            className="absolute inset-0 bg-primary/60"
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
@@ -46,11 +46,11 @@ function CarouselCustomNav({ isAr }: { isAr: boolean }) {
       <Button
         variant="outline"
         size="icon"
-        className="h-14 w-14 bg-white/5 border-white/10 hover:bg-primary hover:text-white hover:scale-110 rounded-full transition-all duration-300 shadow-xl"
+        className="h-10 w-10 bg-white/5 border-white/10 hover:bg-white/10 hover:text-white rounded-full transition-all duration-300"
         onClick={isAr ? scrollPrev : scrollNext}
         disabled={isAr ? !canScrollPrev : !canScrollNext}
       >
-        {isAr ? <ArrowLeft className="h-6 w-6" /> : <ArrowRight className="h-6 w-6" />}
+        {isAr ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
       </Button>
     </div>
   );
@@ -58,7 +58,7 @@ function CarouselCustomNav({ isAr }: { isAr: boolean }) {
 
 export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }: { lang: Locale, dictionary: any, featuredProducts: Product[] }) {
   const plugin = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true })
+    Autoplay({ delay: 4500, stopOnInteraction: false, stopOnMouseEnter: true })
   );
 
   if (!featuredProducts || featuredProducts.length === 0) return null;
@@ -67,11 +67,11 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full relative group/carousel"
+      transition={{ duration: 1 }}
+      className="w-full relative"
     >
       <Carousel
         plugins={[plugin.current]}
@@ -85,79 +85,54 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
         <CarouselContent>
           {featuredProducts.map((product, index) => (
             <CarouselItem key={product.id}>
-              <motion.div 
-                initial={{ opacity: 0, x: isAr ? 50 : -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="p-4 h-[350px] sm:h-[400px] lg:h-[520px]"
-              >
-                  <div className="relative w-full h-full rounded-[3rem] overflow-hidden border border-white/20 bg-white/[0.03] backdrop-blur-2xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] group transition-all duration-700 hover:border-primary/30">
+              <div className="p-2 h-[400px] lg:h-[480px]">
+                  <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm shadow-xl transition-all duration-500 hover:border-white/20">
+                    {/* Background Layer */}
                     <div className="absolute inset-0 z-0">
                       {product.imageUrl && (
                         <Image
                           src={product.imageUrl}
                           alt={product.name?.[lang] || product.name?.en || 'Product'}
                           fill
-                          className="object-cover opacity-60 transition-transform duration-[2s] group-hover:scale-110"
+                          className="object-cover opacity-40 transition-transform duration-[3s] group-hover:scale-105"
                         />
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80"></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                     </div>
 
-                    <div className="relative z-10 flex flex-col justify-between h-full p-8 sm:p-12 md:p-16">
-                      <div className="space-y-4">
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3 }}
-                          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-[10px] font-black uppercase tracking-widest text-primary backdrop-blur-md"
-                        >
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                          </span>
-                          {product.category}
-                        </motion.div>
+                    {/* Content Layer */}
+                    <div className="relative z-10 flex flex-col justify-end h-full p-8 md:p-12">
+                      <div className="max-w-2xl space-y-4">
+                        <div className="flex items-center gap-2">
+                           <span className="h-px w-6 bg-primary/60" />
+                           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80">
+                             {product.category}
+                           </span>
+                        </div>
                         
-                        <motion.h3 
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4 }}
-                          className="font-headline text-3xl sm:text-5xl lg:text-7xl font-black text-white tracking-tighter drop-shadow-2xl"
-                        >
+                        <h3 className="font-headline text-3xl md:text-5xl font-bold text-white tracking-tight">
                           {product.name?.[lang] || product.name?.en}
-                        </motion.h3>
+                        </h3>
                         
-                        <motion.p 
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                          className="text-sm sm:text-lg text-white/80 line-clamp-2 sm:line-clamp-3 leading-relaxed max-w-2xl font-medium drop-shadow-lg"
-                        >
+                        <p className="text-sm md:text-base text-white/70 line-clamp-2 max-w-xl font-light">
                           {product.description?.[lang] || product.description?.en}
-                        </motion.p>
+                        </p>
+
+                        <div className="pt-4 flex flex-wrap gap-4">
+                          <Button asChild className="rounded-full px-8 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all hover:translate-y-[-2px] active:translate-y-0">
+                            <Link href={`/${lang}/products/${product.slug}`}>{dictionary.product_card_details}</Link>
+                          </Button>
+                          
+                          <Button asChild variant="outline" className="rounded-full px-8 h-12 border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold text-sm transition-all hover:translate-y-[-2px] active:translate-y-0 backdrop-blur-md">
+                            <Link href={product.type === 'b2b' ? `/${lang}/products` : `/${lang}/shop`}>
+                                {product.type === 'b2b' ? dictionary.b2b_section_button : dictionary.b2c_section_button}
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
-                      
-                      <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex flex-wrap gap-4"
-                      >
-                        <Button asChild size="lg" className="rounded-full px-10 shadow-2xl shadow-primary/40 font-black uppercase tracking-widest h-12 sm:h-14 hover:scale-105 transition-transform active:scale-95">
-                          <Link href={`/${lang}/products/${product.slug}`}>{dictionary.product_card_details}</Link>
-                        </Button>
-                        
-                        <Button asChild size="lg" variant="outline" className="rounded-full px-10 border-white/30 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest h-12 sm:h-14 hover:scale-105 transition-transform backdrop-blur-md active:scale-95">
-                          <Link href={product.type === 'b2b' ? `/${lang}/products` : `/${lang}/shop`}>
-                              {product.type === 'b2b' ? dictionary.b2b_section_button : dictionary.b2c_section_button}
-                          </Link>
-                        </Button>
-                      </motion.div>
                     </div>
                   </div>
-              </motion.div>
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>

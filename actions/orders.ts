@@ -65,11 +65,11 @@ export async function getOrderDetails(orderId: string) {
  * Fetch the correct commune name in French from EcoTrack
  * to avoid "Commune mal écrite" errors
  */
-async function getValidCommune(wilayaCode: number, communeInput: string): Promise<string> {
+async function getValidCommune(wilayaCode: number, communeInput: string): Promise<{ name: string, hasStopDesk: boolean }> {
   try {
     const communes = await SwiftExpressService.getCommunes(wilayaCode);
 
-    if (!communes || !Array.isArray(communes)) return communeInput;
+    if (!communes || !Array.isArray(communes)) return { name: communeInput, hasStopDesk: true };
 
     const normalize = (str: string) =>
       str
@@ -83,22 +83,22 @@ async function getValidCommune(wilayaCode: number, communeInput: string): Promis
     const exact = communes.find(
       (c: any) => normalize(c.nom) === normalizedInput
     );
-    if (exact) return exact.nom;
+    if (exact) return { name: exact.nom, hasStopDesk: exact.has_stop_desk === 1 };
 
     const partial = communes.find(
       (c: any) =>
         normalize(c.nom).includes(normalizedInput) ||
         normalizedInput.includes(normalize(c.nom))
     );
-    if (partial) return partial.nom;
+    if (partial) return { name: partial.nom, hasStopDesk: partial.has_stop_desk === 1 };
 
     console.warn(
       `No commune match found for "${communeInput}" in wilaya ${wilayaCode}. Using: ${communes[0]?.nom}`
     );
-    return communes[0]?.nom || communeInput;
+    return { name: communes[0]?.nom || communeInput, hasStopDesk: communes[0]?.has_stop_desk === 1 };
   } catch (e) {
     console.error('Failed to fetch communes:', e);
-    return communeInput;
+    return { name: communeInput, hasStopDesk: true };
   }
 }
 
@@ -113,7 +113,14 @@ export async function createSwiftExpressShipment(orderId: string) {
     const wilayaCode = Number(order.customer_wilaya) || 1;
     const rawCommune = order.customer_city || '';
 
-    const validCommune = await getValidCommune(wilayaCode, rawCommune);
+    const { name: validCommune, hasStopDesk } = await getValidCommune(wilayaCode, rawCommune);
+
+    if (order.delivery_type === 'office' && !hasStopDesk) {
+      return { 
+        success: false, 
+        error: 'تنبيه: التوصيل للمكتب غير متوفر في هذه البلدية لدى شركة الشحن. يرجى تغيير نوع التوصيل إلى "للمنزل" أو التواصل مع الزبون لاختيار بلدية أخرى تدعم التوصيل للمكتب.' 
+      };
+    }
 
     const shipmentData: SwiftExpressOrderData = {
       reference: order.id,
