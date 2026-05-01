@@ -6,8 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(amount: number, lang: string = 'en') {
-  // Use a fixed locale format to avoid hydration mismatches
-  // We'll use 'en-US' or similar if we want consistent separators, 
-  // or explicitly pass the lang to Intl.NumberFormat
-  return new Intl.NumberFormat(lang === 'ar' ? 'ar-EG' : 'en-US').format(amount);
+  // Use 'en-US' to ensure Latin numerals (1, 2, 3) are used
+  // This also ensures consistency for hydration
+  return new Intl.NumberFormat('en-US').format(amount);
 }

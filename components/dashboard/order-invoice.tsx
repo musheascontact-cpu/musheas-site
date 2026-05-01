@@ -59,7 +59,7 @@ export const OrderInvoice = forwardRef<HTMLDivElement, OrderInvoiceProps>(({ ord
           <h2 className="text-5xl font-black uppercase mb-4 opacity-10">{isAr ? 'وصل طلب' : 'INVOICE'}</h2>
           <div className="text-[10px] font-bold space-y-2 uppercase tracking-widest">
             <p><span className="opacity-40">{isAr ? 'رقم الطلب' : 'ORDER NO'}:</span> <span className="text-lg font-black opacity-100 ml-2">#{order.id.split('-')[0].toUpperCase()}</span></p>
-            <p><span className="opacity-40">{isAr ? 'التاريخ' : 'DATE'}:</span> <span className="opacity-100 ml-2">{new Date(order.created_at).toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span></p>
+            <p><span className="opacity-40">{isAr ? 'التاريخ' : 'DATE'}:</span> <span className="opacity-100 ml-2">{new Date(order.created_at).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span></p>
           </div>
         </div>
       </div>

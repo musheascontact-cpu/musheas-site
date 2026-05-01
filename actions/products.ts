@@ -139,7 +139,7 @@ export async function searchProducts(query: string, lang: string = 'ar') {
 
   const results = applyPromotionsToProducts(rawResults, activePromotions);
 
-  return results.filter(p => 
+  return results.filter(p =>
     // @ts-ignore
     p.name[lang as 'en' | 'ar']?.toLowerCase().includes(query.toLowerCase())
   );
@@ -273,12 +273,21 @@ export async function upsertProduct(data: any) {
     revalidatePath('/[lang]/shop', 'page');
 
     return { success: true, product: result };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error upserting product:', error);
+
+    // 1. التحقق من أخطاء التحقق (Zod)
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0].message };
     }
-    return { success: false, error: error.message || 'Failed to save product' };
+
+    // 2. التحقق من أخطاء النظام العامة
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+
+    // 3. رسالة خطأ احتياطية
+    return { success: false, error: 'Failed to save product' };
   }
 }
 
@@ -289,19 +298,19 @@ export async function deleteProduct(id: string) {
     await prisma.product.delete({
       where: { id }
     });
-    
+
     revalidatePath('/[lang]/dashboard/products', 'page');
     revalidatePath('/[lang]/products', 'page');
-    
+
     return { success: true };
   } catch (error: any) {
     console.error('Delete action failed:', error);
     let message = 'Failed to delete product';
-    
+
     if (error.code === 'P2003') {
       message = 'Cannot delete this product because it is linked to existing orders.';
     }
-    
+
     return { success: false, error: message };
   }
 }

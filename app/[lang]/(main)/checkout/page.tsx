@@ -90,7 +90,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fetchRates = async () => {
       const result = await getShippingRates();
-      if (result.success && Array.isArray(result.fees)) {
+      if (result && result.success && Array.isArray(result.fees)) {
         setShippingRates(result.fees);
       }
     };
@@ -105,7 +105,7 @@ export default function CheckoutPage() {
       }
       setIsLoadingCommunes(true);
       const result = await getCommunesByWilaya(parseInt(selectedWilaya, 10));
-      if (result.success && Array.isArray(result.communes)) {
+      if (result && result.success && Array.isArray(result.communes)) {
         setApiCommunes(result.communes);
       } else {
         setApiCommunes([]);

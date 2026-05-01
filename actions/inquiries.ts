@@ -34,10 +34,13 @@ export async function submitInquiry(data: InquiryData) {
     revalidatePath('/dashboard/inquiries');
     
     return { success: true, inquiryId: inquiry.id };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Inquiry Submission Error:', error);
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0].message };
+    }
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
     }
     return { success: false, error: 'Failed to submit inquiry. Please try again.' };
   }
