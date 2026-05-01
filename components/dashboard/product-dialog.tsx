@@ -47,7 +47,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Badge } from '@/components/ui/badge';
-import { productSchema, type ProductFormValues } from '@/lib/validations/product';
+import { productSchema, type ProductFormValues, type ProductFormInput } from '@/lib/validations/product';
 import { upsertProduct } from '@/actions/products';
 
 interface ProductDialogProps {
@@ -61,7 +61,7 @@ export function ProductDialog({ product, lang }: ProductDialogProps) {
   const { toast } = useToast();
   const isAr = lang === 'ar';
 
-  const defaultValues: Partial<ProductFormValues> = product
+  const defaultValues: Partial<ProductFormInput> = product
     ? {
         id: product.id,
         name_en: product.name?.en || '',
@@ -106,7 +106,7 @@ export function ProductDialog({ product, lang }: ProductDialogProps) {
         is_visible: true,
       };
 
-  const form = useForm<ProductFormValues>({
+  const form = useForm<ProductFormInput>({
     resolver: zodResolver(productSchema),
     defaultValues: defaultValues as any,
   });
@@ -126,7 +126,7 @@ export function ProductDialog({ product, lang }: ProductDialogProps) {
     }
   }, [nameEn, isSlugDirty, form, product]);
 
-  async function onSubmit(data: ProductFormValues) {
+  async function onSubmit(data: ProductFormInput) {
     try {
       setIsSubmitting(true);
       const result = await upsertProduct(data);

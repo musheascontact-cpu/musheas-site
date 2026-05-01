@@ -37,7 +37,7 @@ export async function submitInquiry(data: InquiryData) {
   } catch (error: any) {
     console.error('Inquiry Submission Error:', error);
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     return { success: false, error: 'Failed to submit inquiry. Please try again.' };
   }

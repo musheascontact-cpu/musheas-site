@@ -22,7 +22,7 @@ export type Product = {
   ingredients: BilingualList;
   application: BilingualText;
   benefits: BilingualList;
-  type: 'b2b' | 'b2c';
+  type: 'b2b' | 'b2c' | 'rd';
   is_visible?: boolean;
   is_featured?: boolean;
   activePromotion?: any;

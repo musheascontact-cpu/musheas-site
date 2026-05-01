@@ -138,7 +138,7 @@ export function OrderStatusSelect({ orderId, currentStatus, lang, onStatusChange
           </Button>
         </DropdownMenuTrigger>
         
-        <DropdownMenuContent align={isAr ? 'right' : 'left'} className="w-56 p-2 rounded-xl">
+        <DropdownMenuContent align={isAr ? 'end' : 'start'} className="w-56 p-2 rounded-xl">
           {nextConfig && (
             <>
               <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground px-2 py-1.5">

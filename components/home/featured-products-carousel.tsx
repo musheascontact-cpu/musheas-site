@@ -94,7 +94,7 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
                           src={product.imageUrl}
                           alt={product.name?.[lang] || product.name?.en || 'Product'}
                           fill
-                          className="object-cover opacity-40 transition-transform duration-[3s] group-hover:scale-105"
+                          className="object-cover opacity-40 transition-transform duration-[3000ms] group-hover:scale-105"
                         />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
