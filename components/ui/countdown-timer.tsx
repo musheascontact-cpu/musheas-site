@@ -55,7 +55,7 @@ export const CountdownTimer = ({ targetDate, dictionary, className, onExpire }: 
       {items.map((item, index) => (
         <React.Fragment key={item.label}>
           <div className="flex flex-col items-center">
-            <div className="relative min-w-[40px] md:min-w-[50px] h-10 md:h-12 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 flex items-center justify-center overflow-hidden">
+            <div className="relative min-w-[36px] sm:min-w-[40px] md:min-w-[50px] h-9 sm:h-10 md:h-12 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 flex items-center justify-center overflow-hidden">
               <AnimatePresence mode="popLayout">
                 <motion.span
                   key={item.value}

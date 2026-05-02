@@ -22,7 +22,7 @@ export default async function MainLayout({
         <UrgencyBanner promotion={activePromotion} lang={params.lang} />
       )}
       <Header lang={params.lang as Locale} dictionary={dictionary} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 pb-24 lg:pb-0">{children}</main>
       <Footer dictionary={dictionary} lang={params.lang} />
       <MobileBottomNav lang={params.lang as Locale} dictionary={dictionary} />
     </div>

@@ -5,6 +5,9 @@ import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Sparkles } from 'lucid
 import { ContactForm } from '@/components/contact/contact-form';
 import Image from 'next/image';
 import { Reveal } from '@/components/ui/reveal';
+import { InteractiveLocationCard } from '@/components/contact/interactive-location-card';
+import { ContactHero } from '@/components/contact/contact-hero';
+import { ContactInfo } from '@/components/contact/contact-info';
 
 import { getSiteContent } from '@/actions/content';
 
@@ -44,33 +47,11 @@ export default async function ContactPage({ params: { lang } }: { params: { lang
     return (
         <main className="overflow-x-hidden">
             {/* Hero Section */}
-            <section className="relative h-[60vh] min-h-[450px] flex items-center justify-center text-center px-4 overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <Image
-                        src={images.hero}
-                        alt="Contact hero"
-                        fill
-                        className="object-cover scale-105 animate-slow-zoom"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#020817]/40 via-[#020817]/60 to-[#020817]"></div>
-                </div>
-                
-                <div className="container relative z-10">
-                    <Reveal width="100%" y={50} duration={0.8}>
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-widest mb-6">
-                            <MessageSquare className="h-3.5 w-3.5" />
-                            {isAr ? 'تواصل معنا' : 'Get In Touch'}
-                        </div>
-                        <h1 className="font-headline text-5xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-white mb-6">
-                            {dictionary.contact_title}
-                        </h1>
-                        <p className="max-w-2xl mx-auto text-lg md:text-xl text-white/70 font-light leading-relaxed">
-                            {dictionary.contact_description}
-                        </p>
-                    </Reveal>
-                </div>
-            </section>
+            <ContactHero 
+                image={images.hero} 
+                dictionary={dictionary} 
+                isAr={isAr} 
+            />
 
             <div className="relative py-24 container">
                 {/* Background Glows */}
@@ -85,27 +66,13 @@ export default async function ContactPage({ params: { lang } }: { params: { lang
                                 {dictionary.contact_info_title}
                             </h2>
                             <div className="grid grid-cols-1 gap-4">
-                                {[
+                            <ContactInfo 
+                                items={[
                                     { icon: <Mail className="h-5 w-5" />, title: dictionary.contact_email, value: contactInfo.email, href: `mailto:${contactInfo.email}` },
                                     { icon: <Phone className="h-5 w-5" />, title: dictionary.contact_phone, value: contactInfo.phone, href: `tel:${contactInfo.phone.replace(/\s/g, '')}` },
                                     { icon: <MapPin className="h-5 w-5" />, title: dictionary.contact_address, value: contactInfo.address }
-                                ].map((item, i) => (
-                                    <div key={i} className="group p-6 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all duration-500">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                {item.icon}
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{item.title}</p>
-                                                {item.href ? (
-                                                    <a href={item.href} className="text-white font-bold hover:text-primary transition-colors" dir="ltr">{item.value}</a>
-                                                ) : (
-                                                    <p className="text-white font-bold" dir="ltr">{item.value}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
+                                ]} 
+                            />
                             </div>
                         </Reveal>
 
@@ -143,20 +110,12 @@ export default async function ContactPage({ params: { lang } }: { params: { lang
             {/* Map Section or Additional Info */}
             <section className="container pb-24">
                 <Reveal width="100%" y={40}>
-                    <div className="h-[400px] w-full rounded-[4rem] bg-white/[0.03] border border-white/5 flex items-center justify-center overflow-hidden group relative">
-                        {/* Placeholder for real map if needed, but for now a themed image */}
-                        <Image 
-                            src={images.location}
-                            alt="Location Context"
-                            fill
-                            className="object-cover opacity-20 grayscale group-hover:grayscale-0 group-hover:opacity-40 transition-all duration-1000"
-                        />
-                        <div className="relative z-10 text-center">
-                            <MapPin className="h-12 w-12 text-primary mx-auto mb-4 animate-bounce" />
-                            <h3 className="text-white font-black text-2xl uppercase tracking-tighter">{isAr ? 'مقرنا في الجزائر' : 'Based in Algiers'}</h3>
-                            <p className="text-white/40 text-sm mt-2">{isAr ? 'نخدم العالم من قلب شمال أفريقيا' : 'Serving the world from the heart of North Africa'}</p>
-                        </div>
-                    </div>
+                    <InteractiveLocationCard 
+                        image={images.location}
+                        title={isAr ? 'مقرنا في الجزائر' : 'Based in Algiers'}
+                        subtitle={isAr ? 'نخدم العالم من قلب شمال أفريقيا' : 'Serving the world from the heart of North Africa'}
+                        isAr={isAr}
+                    />
                 </Reveal>
             </section>
         </main>

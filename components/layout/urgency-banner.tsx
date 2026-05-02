@@ -32,10 +32,10 @@ export function UrgencyBanner({ promotion, lang }: UrgencyBannerProps) {
         exit={{ height: 0, opacity: 0 }}
         className="bg-primary overflow-hidden relative z-50"
       >
-        <div className="container mx-auto px-4 py-2 md:py-3 flex flex-col md:flex-row items-center justify-center gap-4 text-primary-foreground">
-          <div className="flex items-center gap-2 font-bold text-sm md:text-base">
-            <Sparkles className="h-4 w-4 animate-pulse" />
-            <span>{title}</span>
+        <div className="container mx-auto px-4 py-2.5 md:py-3 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6 text-primary-foreground">
+          <div className="flex items-center gap-2 font-bold text-xs sm:text-sm md:text-base text-center">
+            <Sparkles className="h-3 w-3 sm:h-4 sm:h-4 animate-pulse shrink-0" />
+            <span className="line-clamp-1 md:line-clamp-none">{title}</span>
           </div>
           
           <CountdownTimer 
@@ -46,7 +46,7 @@ export function UrgencyBanner({ promotion, lang }: UrgencyBannerProps) {
               timer_minutes: lang === 'ar' ? 'دقيقة' : 'Mins',
               timer_seconds: lang === 'ar' ? 'ثانية' : 'Secs',
             }}
-            className="scale-90 md:scale-100"
+            className="scale-[0.8] sm:scale-90 md:scale-100"
           />
 
           <Button

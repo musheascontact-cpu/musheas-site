@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Locale } from '@/lib/i18n-config';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function CarouselCustomNav({ isAr }: { isAr: boolean }) {
   const { scrollNext, scrollPrev, canScrollNext, canScrollPrev } = useCarousel();
@@ -85,8 +86,8 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
         <CarouselContent>
           {featuredProducts.map((product, index) => (
             <CarouselItem key={product.id}>
-              <div className="p-2 h-[400px] lg:h-[480px]">
-                  <div className="relative w-full h-full rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm shadow-xl transition-all duration-500 hover:border-white/20">
+              <div className="p-1.5 sm:p-2 h-[320px] sm:h-[400px] lg:h-[480px]">
+                  <div className="relative w-full h-full rounded-[1.75rem] sm:rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm shadow-xl transition-all duration-500 hover:border-white/20">
                     {/* Background Layer */}
                     <div className="absolute inset-0 z-0">
                       {product.imageUrl && (
@@ -101,7 +102,7 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
                     </div>
 
                     {/* Content Layer */}
-                    <div className="relative z-10 flex flex-col justify-end h-full p-8 md:p-12">
+                    <div className="relative z-10 flex flex-col justify-end h-full p-5 sm:p-8 md:p-12">
                       <div className="max-w-2xl space-y-4">
                         <div className="flex items-center gap-2">
                            <span className="h-px w-6 bg-primary/60" />
@@ -110,11 +111,14 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
                            </span>
                         </div>
                         
-                        <h3 className="font-headline text-3xl md:text-5xl font-bold text-white tracking-tight">
+                        <h3 className={cn(
+                          "font-headline text-2xl md:text-5xl font-bold text-white tracking-tight",
+                          isAr ? "leading-[1.4]" : "leading-tight"
+                        )}>
                           {product.name?.[lang] || product.name?.en}
                         </h3>
                         
-                        <p className="text-sm md:text-base text-white/70 line-clamp-2 max-w-xl font-light">
+                        <p className="text-xs sm:text-sm md:text-base text-white/70 line-clamp-3 md:line-clamp-2 max-w-xl font-light text-wrap-balance">
                           {product.description?.[lang] || product.description?.en}
                         </p>
 
