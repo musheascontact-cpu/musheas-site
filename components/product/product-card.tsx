@@ -118,6 +118,13 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
         )}
         style={style}
       >
+        <Link
+          href={`/${lang}/products/${product.slug}`}
+          className="absolute inset-0 z-10"
+          aria-label={product.name[lang]}
+          style={{ WebkitTapHighlightColor: "transparent" } as React.CSSProperties}
+        />
+
         {/* Image Area */}
         <div
           className="relative w-full aspect-square overflow-hidden"
@@ -125,11 +132,7 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
           onTouchEnd={() => imageScale.set(1)}
           onTouchCancel={() => imageScale.set(1)}
         >
-          <Link
-            href={`/${lang}/products/${product.slug}`}
-            className="absolute inset-0 z-10"
-            style={{ WebkitTapHighlightColor: "transparent" } as React.CSSProperties}
-          />
+
 
           {product.imageUrl && !imgError ? (
             <motion.img
@@ -191,7 +194,7 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
 
         {/* Card Content */}
         <div className="flex flex-col p-3 sm:p-5 flex-1 text-center items-center overflow-hidden">
-          <h3 className="font-bold text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2.4rem] mb-2 group-hover:text-primary transition-colors w-full break-words">
+          <h3 className="font-bold text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2.6rem] mb-2 group-hover:text-primary transition-colors w-full break-words hyphens-auto">
             {product.name[lang]}
           </h3>
 
@@ -214,7 +217,7 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
                 onClick={handleBuyNow}
                 whileTap={{ scale: 0.94 }}
                 className={cn(
-                  "w-full rounded-full h-10 font-bold text-[11px] sm:text-xs transition-all duration-300 flex items-center justify-center gap-1.5 overflow-hidden",
+                  "w-full rounded-full h-10 font-bold text-[11px] sm:text-xs transition-all duration-300 flex items-center justify-center gap-1.5 overflow-hidden relative z-20",
                   addedFlash
                     ? "bg-green-500 text-white shadow-green-500/30 shadow-lg"
                     : "bg-primary text-primary-foreground shadow-primary/20 shadow-md hover:bg-primary/90"
@@ -249,14 +252,14 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
               </motion.button>
             </div>
           ) : (
-            <div className="mt-auto w-full pt-3 space-y-2.5">
-              <div className="py-1 px-3 rounded-full bg-primary/10 border border-primary/20">
-                <p className="text-[9px] font-black uppercase tracking-widest text-primary">
-                  {dictionary.b2b_use_disclaimer_title}
-                </p>
+              <div className="mt-auto w-full pt-3 space-y-2.5 relative z-20">
+                <div className="py-1 px-3 rounded-full bg-primary/10 border border-primary/20 w-full">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-primary text-center break-words">
+                    {dictionary.b2b_use_disclaimer_title}
+                  </p>
+                </div>
+                <ProductInquiryDialog product={product as any} lang={lang} dictionary={dictionary} />
               </div>
-              <ProductInquiryDialog product={product as any} lang={lang} dictionary={dictionary} />
-            </div>
           )}
         </div>
       </Card>

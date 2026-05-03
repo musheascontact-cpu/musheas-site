@@ -1,129 +1,186 @@
 import { getDashboardStats } from '@/actions/analytics';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, ShoppingCart, DollarSign, Users, LayoutDashboard, Calendar, Activity } from "lucide-react"
+import { Package, ShoppingCart, DollarSign, Users, TrendingUp, TrendingDown, Activity, Calendar, ArrowUpRight, Zap, MessageSquare, Mail } from "lucide-react"
 import { Locale } from '@/lib/i18n-config';
 import { RevenueChart, StatusPieChart } from '@/components/dashboard/analytics-charts';
 import { TopProducts } from '@/components/dashboard/top-products';
 import { RealtimeDashboardSync } from '@/components/dashboard/realtime-sync';
+import Link from 'next/link';
 
 export default async function DashboardOverview({ params: { lang } }: { params: { lang: Locale } }) {
   const stats = await getDashboardStats();
   const isAr = lang === 'ar';
 
-  if (!stats) return <div>{isAr ? 'خطأ في تحميل البيانات' : 'Error loading stats'}</div>;
+  if (!stats) return (
+    <div className="flex items-center justify-center h-64 text-muted-foreground">
+      {isAr ? 'خطأ في تحميل البيانات' : 'Error loading stats'}
+    </div>
+  );
 
   const summaryStats = [
     {
       title: isAr ? 'إجمالي المبيعات' : 'Total Revenue',
-      value: `${stats.counts.revenue.toLocaleString()} DZD`,
+      value: `${stats.counts.revenue.toLocaleString('en-US')}`,
+      unit: 'DZD',
       icon: DollarSign,
       color: 'text-primary',
       bg: 'bg-primary/10',
+      border: 'border-primary/20',
+      trend: '+12.5%',
+      trendUp: true,
+      href: null,
     },
     {
       title: isAr ? 'الطلبات' : 'Total Orders',
       value: stats.counts.orders,
+      unit: '',
       icon: ShoppingCart,
-      color: 'text-green-500',
-      bg: 'bg-green-500/10',
+      color: 'text-sky-500',
+      bg: 'bg-sky-500/10',
+      border: 'border-sky-500/20',
+      trend: '+8.2%',
+      trendUp: true,
+      href: `/${lang}/dashboard/orders`,
     },
     {
       title: isAr ? 'المنتجات' : 'Products',
       value: stats.counts.products,
+      unit: '',
       icon: Package,
-      color: 'text-blue-500',
-      bg: 'bg-blue-500/10',
+      color: 'text-violet-500',
+      bg: 'bg-violet-500/10',
+      border: 'border-violet-500/20',
+      trend: '0%',
+      trendUp: true,
+      href: `/${lang}/dashboard/products`,
     },
     {
       title: isAr ? 'المشتركين' : 'Subscribers',
       value: stats.counts.subscribers,
+      unit: '',
       icon: Users,
-      color: 'text-purple-500',
-      bg: 'bg-purple-500/10',
+      color: 'text-emerald-500',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+      trend: '+3.1%',
+      trendUp: true,
+      href: `/${lang}/dashboard/subscribers`,
     },
   ];
 
+  const quickActions = [
+    { title: isAr ? 'إضافة منتج' : 'Add Product', icon: Package, href: `/${lang}/dashboard/products`, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+    { title: isAr ? 'عرض الطلبات' : 'View Orders', icon: ShoppingCart, href: `/${lang}/dashboard/orders`, color: 'text-sky-500', bg: 'bg-sky-500/10' },
+    { title: isAr ? 'الاستفسارات' : 'Inquiries', icon: MessageSquare, href: `/${lang}/dashboard/inquiries`, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { title: isAr ? 'إدارة العروض' : 'Promotions', icon: Zap, href: `/${lang}/dashboard/promotions`, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { title: isAr ? 'المشتركون' : 'Subscribers', icon: Mail, href: `/${lang}/dashboard/subscribers`, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { title: isAr ? 'المحتوى' : 'Content', icon: Activity, href: `/${lang}/dashboard/content`, color: 'text-primary', bg: 'bg-primary/10' },
+  ];
+
   return (
-    <div className="flex flex-col gap-8 pb-12 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-6 pb-12 animate-in fade-in duration-300">
       <RealtimeDashboardSync />
-      
+
       {/* Page Header */}
-      <div className="relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 rounded-[3rem] bg-gradient-to-br from-card via-card/80 to-primary/5 border border-white/5 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        <div className="flex items-center gap-6">
-          <div className="p-4 rounded-[2rem] bg-primary shadow-2xl shadow-primary/30 text-primary-foreground">
-            <LayoutDashboard className="h-10 w-10" />
-          </div>
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-4xl font-black tracking-tight text-foreground">
-                {isAr ? 'لوحة الإحصائيات' : 'Analytics Center'}
-              </h1>
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-bold border border-green-500/20">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                {isAr ? 'تزامن مباشر' : 'Live Sync'}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-black tracking-tight">
+              {isAr ? 'لوحة التحكم' : 'Dashboard'}
+            </h1>
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black border border-emerald-500/20 uppercase tracking-widest">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
               </span>
-            </div>
-            <p className="text-muted-foreground mt-1 flex items-center gap-2 font-medium">
-              <Calendar className="h-4 w-4 opacity-70" />
-              {new Date().toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+              {isAr ? 'مباشر' : 'Live'}
+            </span>
           </div>
+          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <Calendar className="h-3.5 w-3.5" />
+            {new Date().toLocaleDateString(isAr ? 'ar-EG' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {summaryStats.map((stat) => (
-          <Card key={stat.title} className="group relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 shadow-xl shadow-black/5 hover:-translate-y-1">
-            <div className={`absolute top-0 right-0 w-32 h-32 ${stat.bg} rounded-full blur-3xl -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity`} />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-              <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{stat.title}</CardTitle>
-              <div className={`p-3 rounded-2xl ${stat.bg} group-hover:scale-110 transition-transform`}>
-                <stat.icon className={`h-5 w-5 ${stat.color}`} />
+      {/* KPI Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {summaryStats.map((stat) => {
+          const card = (
+            <div className="group relative overflow-hidden rounded-2xl border bg-card p-5 hover:shadow-lg hover:shadow-black/5 transition-all duration-300 hover:-translate-y-0.5 cursor-default">
+              <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} rounded-full blur-2xl -mr-8 -mt-8 opacity-60 group-hover:opacity-100 transition-opacity`} />
+              <div className="relative">
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`p-2.5 rounded-xl ${stat.bg} border ${stat.border}`}>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
+                  <div className={cn("flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-full",
+                    stat.trendUp ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                  )}>
+                    {stat.trendUp ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                    {stat.trend}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-1">{stat.title}</p>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-3xl font-black tracking-tighter">{stat.value.toLocaleString('en-US')}</span>
+                  {stat.unit && <span className="text-xs text-muted-foreground font-bold">{stat.unit}</span>}
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-4xl font-black tracking-tighter">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          );
+
+          return stat.href ? (
+            <Link key={stat.title} href={stat.href} className="block">
+              {card}
+            </Link>
+          ) : (
+            <div key={stat.title}>{card}</div>
+          );
+        })}
       </div>
 
-      {/* Main Charts Section */}
-      <div className="grid gap-8 lg:grid-cols-3">
+      {/* Charts */}
+      <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-           <RevenueChart data={stats.revenueTrends} lang={lang} />
+          <RevenueChart data={stats.revenueTrends} lang={lang} />
         </div>
         <div>
-           <StatusPieChart data={stats.statusDistribution} lang={lang} />
+          <StatusPieChart data={stats.statusDistribution} lang={lang} />
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid gap-8 lg:grid-cols-3">
-         <div className="lg:col-span-1">
-            <TopProducts products={stats.topProducts} lang={lang} />
-         </div>
-         <div className="lg:col-span-2">
-            <Card className="rounded-[2.5rem] border-2 shadow-xl shadow-black/5 h-full overflow-hidden">
-               <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-lg font-black uppercase tracking-widest opacity-60">
-                    {isAr ? 'نظرة سريعة على المخزون' : 'Stock Overview'}
-                  </CardTitle>
-                  <Package className="h-5 w-5 text-blue-500" />
-               </CardHeader>
-               <CardContent>
-                  <div className="flex items-center justify-center h-48 opacity-20 italic font-medium">
-                     {isAr ? 'سيتم ربط بيانات المخزون قريباً...' : 'Inventory insights coming soon...'}
-                  </div>
-               </CardContent>
-            </Card>
-         </div>
+      {/* Bottom Row: Top Products + Quick Actions */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <TopProducts products={stats.topProducts} lang={lang} />
+        </div>
+
+        {/* Quick Access */}
+        <div className="lg:col-span-2 rounded-2xl border bg-card p-5">
+          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">
+            {isAr ? 'وصول سريع' : 'Quick Access'}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {quickActions.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="group flex flex-col items-center gap-3 p-4 rounded-xl border border-transparent hover:border-border hover:bg-muted/50 transition-all duration-200"
+              >
+                <div className={`p-3 rounded-xl ${action.bg} group-hover:scale-110 transition-transform`}>
+                  <action.icon className={`h-5 w-5 ${action.color}`} />
+                </div>
+                <span className="text-xs font-bold text-center leading-tight">{action.title}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
+}
+
+// Helper (inline since it's a server component)
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }

@@ -1,13 +1,11 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import type { Category } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n-config';
 
 interface ProductFiltersProps {
-  categories: Category[];
+  categories: string[];    // e.g. ["Extracts", "Ferments", "Oils"]
   lang: Locale;
   dictionary: any;
 }
@@ -16,38 +14,50 @@ export function ProductFilters({ categories, lang, dictionary }: ProductFiltersP
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const currentCategory = searchParams.get('category');
+  const currentCategory = searchParams.get('category') || '';
 
-  const handleFilter = (slug: string | null) => {
+  const handleFilter = (category: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (slug) {
-      params.set('category', slug);
+    // Remove page/query when switching categories for a clean result
+    params.delete('page');
+    if (category) {
+      params.set('category', category);
     } else {
       params.delete('category');
     }
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  if (categories.length === 0) return null;
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Button
-        variant={currentCategory === null ? 'default' : 'outline'}
-        size="sm"
-        onClick={() => handleFilter(null)}
-        className={cn(currentCategory === null && "bg-primary text-primary-foreground hover:bg-primary/90")}
+      {/* "All" pill */}
+      <button
+        onClick={() => handleFilter('')}
+        className={cn(
+          "h-9 px-4 rounded-full text-sm font-bold border transition-all duration-200",
+          !currentCategory
+            ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+            : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground bg-background"
+        )}
       >
-        {dictionary.filter_all}
-      </Button>
-      {categories.map((category) => (
-        <Button
-          key={category.id}
-          variant={currentCategory === category.slug ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => handleFilter(category.slug)}
-          className={cn(currentCategory === category.slug && "bg-primary text-primary-foreground hover:bg-primary/90")}
+        {dictionary.filter_all || 'All'}
+      </button>
+
+      {categories.map((cat) => (
+        <button
+          key={cat}
+          onClick={() => handleFilter(cat)}
+          className={cn(
+            "h-9 px-4 rounded-full text-sm font-bold border transition-all duration-200",
+            currentCategory === cat
+              ? "bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20"
+              : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground bg-background"
+          )}
         >
-          {category.name[lang]}
-        </Button>
+          {cat}
+        </button>
       ))}
     </div>
   );

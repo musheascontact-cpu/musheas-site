@@ -13,6 +13,23 @@ export async function Footer({ dictionary, lang }: { dictionary: any, lang: stri
   const dynamicContent = await getSiteContent();
   const socialLinksContent = dynamicContent.find((c: any) => c.key === 'social_media_links');
   
+  // Dynamic Content with fallbacks to dictionary or defaults
+  const getContent = (key: string, defaultValue: any) => {
+    const item = dynamicContent.find((c: any) => c.key === key);
+    if (!item) return defaultValue;
+    if (typeof item.value === 'object' && item.value !== null && !Array.isArray(item.value)) {
+      const val = item.value as Record<string, any>;
+      return val[lang] || val['en'] || defaultValue;
+    }
+    return (item.value as string) || defaultValue;
+  };
+
+  const tagline = getContent('footer_tagline', dictionary?.footer_tagline || 'Mycology meets biotechnology.');
+  const email = getContent('footer_email', 'contact@musheas.com');
+  const phone = getContent('footer_phone', '+213 (0) 555 00 00 00');
+  const address = getContent('footer_address', isAr ? 'الجزائر العاصمة' : 'Algiers, Algeria');
+  const copyright = getContent('footer_copyright', dictionary?.footer_copy || '© {year} MUSHEAS. All rights reserved.');
+
   let socialLinks: SocialLink[] = [];
   if (socialLinksContent && Array.isArray(socialLinksContent.value)) {
     socialLinks = (socialLinksContent.value as any[]).filter((link: any) => link.isActive);
@@ -26,8 +43,6 @@ export async function Footer({ dictionary, lang }: { dictionary: any, lang: stri
     ];
   }
 
-
-
   return (
     <footer className="relative mt-20 border-t border-white/10 bg-[#020817] text-white/70">
       <div className="container mx-auto px-6 py-16">
@@ -35,7 +50,7 @@ export async function Footer({ dictionary, lang }: { dictionary: any, lang: stri
           <div className="space-y-6">
             <h2 className="text-xl font-bold text-primary tracking-tight">MUSHEAS</h2>
             <p className="text-sm opacity-50 max-w-xs leading-relaxed">
-              {dictionary?.footer_tagline || 'Mycology meets biotechnology.'}
+              {tagline}
             </p>
             <div className="flex gap-4">
               {socialLinks.map((social) => {
@@ -71,9 +86,9 @@ export async function Footer({ dictionary, lang }: { dictionary: any, lang: stri
               {isAr ? 'اتصل بنا' : 'Contact Us'}
             </h4>
             <ul className="space-y-4 text-sm">
-               <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /> contact@musheas.com</li>
-               <li className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /> <span dir="ltr">+213 (0) 555 00 00 00</span></li>
-               <li className="flex items-center gap-3"><MapPin className="h-4 w-4 text-primary" /> {isAr ? 'الجزائر العاصمة' : 'Algiers, Algeria'}</li>
+               <li className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /> {email}</li>
+               <li className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /> <span dir="ltr">{phone}</span></li>
+               <li className="flex items-center gap-3"><MapPin className="h-4 w-4 text-primary" /> {address}</li>
             </ul>
           </div>
 
@@ -86,7 +101,7 @@ export async function Footer({ dictionary, lang }: { dictionary: any, lang: stri
         </div>
 
         <div className="mt-16 pt-8 border-t border-white/5 text-center text-[10px] uppercase tracking-widest opacity-30">
-          {dictionary?.footer_copy?.replace('{year}', currentYear.toString()) || `© ${currentYear} MUSHEAS. ALL RIGHTS RESERVED.`}
+          {copyright?.replace('{year}', currentYear.toString())}
         </div>
       </div>
     </footer>

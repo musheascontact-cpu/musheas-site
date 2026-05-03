@@ -53,9 +53,10 @@ import { upsertProduct } from '@/actions/products';
 interface ProductDialogProps {
   product?: any;
   lang: string;
+  categories?: string[];
 }
 
-export function ProductDialog({ product, lang }: ProductDialogProps) {
+export function ProductDialog({ product, lang, categories = [] }: ProductDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -260,19 +261,31 @@ export function ProductDialog({ product, lang }: ProductDialogProps) {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem className="space-y-1.5">
-                      <FormLabel className="text-xs font-black uppercase text-muted-foreground">Category</FormLabel>
-                      <FormControl>
-                        <Input {...field} className="h-12 rounded-xl border-2" placeholder="Honey, Sweets, etc." />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem className="space-y-1.5">
+                        <FormLabel className="text-xs font-black uppercase text-muted-foreground">Category</FormLabel>
+                        <FormControl>
+                          <>
+                            <Input 
+                              {...field} 
+                              list="category-list"
+                              className="h-12 rounded-xl border-2" 
+                              placeholder="Honey, Sweets, etc." 
+                            />
+                            <datalist id="category-list">
+                              {categories.map((cat) => (
+                                <option key={cat} value={cat} />
+                              ))}
+                            </datalist>
+                          </>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
               </div>
             </div>
 

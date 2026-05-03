@@ -17,9 +17,10 @@ import { Button } from "@/components/ui/button";
 interface ProductsTableProps {
   initialProducts: any[];
   lang: Locale;
+  categories: string[];
 }
 
-export function ProductsTable({ initialProducts, lang }: ProductsTableProps) {
+export function ProductsTable({ initialProducts, lang, categories }: ProductsTableProps) {
   const [products, setProducts] = useState(initialProducts);
   const [isPending, startTransition] = useTransition();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -197,7 +198,7 @@ export function ProductsTable({ initialProducts, lang }: ProductsTableProps) {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
-                        <ProductDialog product={product} lang={lang} />
+                        <ProductDialog product={product} lang={lang} categories={categories} />
                         <DeleteProductButton
                           productId={product.id}
                           productName={product.name?.[isAr ? 'ar' : 'en'] ?? product.name?.en ?? product.id}
@@ -222,7 +223,7 @@ export function ProductsTable({ initialProducts, lang }: ProductsTableProps) {
                           {isAr ? 'ابدأ بإضافة منتجاتك الفريدة لتعرضها للعالم بلمسة واحدة.' : 'Start adding your unique products to showcase them to the world with one touch.'}
                         </p>
                       </div>
-                      <ProductDialog lang={lang} />
+                      <ProductDialog lang={lang} categories={categories} />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -278,7 +279,7 @@ export function ProductsTable({ initialProducts, lang }: ProductsTableProps) {
                   </button>
 
                   <div className="flex items-center gap-2">
-                    <ProductDialog product={product} lang={lang} />
+                    <ProductDialog product={product} lang={lang} categories={categories} />
                     <DeleteProductButton
                       productId={product.id}
                       productName={product.name?.[isAr ? 'ar' : 'en'] ?? product.name?.en ?? product.id}

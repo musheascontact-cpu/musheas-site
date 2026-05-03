@@ -86,7 +86,7 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
         <CarouselContent>
           {featuredProducts.map((product, index) => (
             <CarouselItem key={product.id}>
-              <div className="p-1.5 sm:p-2 h-[320px] sm:h-[400px] lg:h-[480px]">
+              <div className="p-1.5 sm:p-2 h-[360px] sm:h-[420px] lg:h-[500px]">
                   <div className="relative w-full h-full rounded-[1.75rem] sm:rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-sm shadow-xl transition-all duration-500 hover:border-white/20">
                     {/* Background Layer */}
                     <div className="absolute inset-0 z-0">
@@ -112,13 +112,14 @@ export function FeaturedProductsCarousel({ lang, dictionary, featuredProducts }:
                         </div>
                         
                         <h3 className={cn(
-                          "font-headline text-2xl md:text-5xl font-bold text-white tracking-tight",
-                          isAr ? "leading-[1.4]" : "leading-tight"
+                          "font-headline font-bold text-white tracking-tight line-clamp-3",
+                          "text-xl sm:text-2xl md:text-4xl lg:text-5xl",
+                          isAr ? "leading-[1.5]" : "leading-snug"
                         )}>
                           {product.name?.[lang] || product.name?.en}
                         </h3>
                         
-                        <p className="text-xs sm:text-sm md:text-base text-white/70 line-clamp-3 md:line-clamp-2 max-w-xl font-light text-wrap-balance">
+                        <p className="text-xs sm:text-sm text-white/70 line-clamp-2 max-w-xl font-light">
                           {product.description?.[lang] || product.description?.en}
                         </p>
 

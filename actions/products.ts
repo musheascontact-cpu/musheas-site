@@ -8,6 +8,63 @@ import type { Promotion } from '@/actions/promotions';
 import { productSchema } from '@/lib/validations/product';
 import { z } from 'zod';
 
+/**
+ * Returns distinct categories from the DB for a given product type.
+ * This replaces hardcoded categories from lib/data.ts.
+ */
+export async function getDistinctCategories(type: 'b2b' | 'b2c' | 'all' = 'all'): Promise<string[]> {
+  try {
+    const where: any = { is_visible: true };
+    if (type === 'b2b') where.type = { in: ['b2b', 'rd'] };
+    if (type === 'b2c') where.type = 'b2c';
+
+    const products = await prisma.product.findMany({
+      where,
+      select: { category: true },
+      distinct: ['category'],
+      orderBy: { category: 'asc' },
+    });
+
+    return products.map((p) => p.category).filter(Boolean) as string[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Renames a category across all products.
+ */
+export async function renameCategory(oldName: string, newName: string) {
+  try {
+    await prisma.product.updateMany({
+      where: { category: oldName },
+      data: { category: newName },
+    });
+    revalidatePath('/', 'layout');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Deletes a category by clearing the category field on all associated products.
+ * Or alternatively, we could move them to "Uncategorized".
+ */
+export async function deleteCategory(categoryName: string) {
+  try {
+    await prisma.product.updateMany({
+      where: { category: categoryName },
+      data: { category: 'Uncategorized' },
+    });
+    revalidatePath('/', 'layout');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+
 export async function getPaginatedProducts({
   page = 0,
   limit = 8,
@@ -28,24 +85,14 @@ export async function getPaginatedProducts({
   const skip = page * limit;
   const now = new Date();
 
-  // Fetch products and active promotions in parallel
-  const [productsData, totalCount, activePromotionsData] = await Promise.all([
+  // Fetch all matching products by type to apply accurate memory filtering
+  const [productsData, activePromotionsData] = await Promise.all([
     prisma.product.findMany({
       where: {
         type: type === 'b2b' ? { in: ['b2b', 'rd'] } : type,
         ...(onlyVisible ? { is_visible: true } : {}),
-        ...(category ? { category } : {}),
       },
       orderBy: { created_at: 'desc' },
-      skip,
-      take: limit,
-    }),
-    prisma.product.count({
-      where: {
-        type: type === 'b2b' ? { in: ['b2b', 'rd'] } : type,
-        ...(onlyVisible ? { is_visible: true } : {}),
-        ...(category ? { category } : {}),
-      },
     }),
     prisma.promotion.findMany({
       where: {
@@ -81,19 +128,32 @@ export async function getPaginatedProducts({
   // Apply promotions to compute effective salePrice dynamically
   const products: Product[] = applyPromotionsToProducts(rawProducts, activePromotions);
 
-  // Filtering by query in JS (Prisma can't easily filter inside JSON fields without specialized DB features, so keeping JS filter for now)
   let filtered = products;
-  if (query) {
-    filtered = products.filter(p =>
-      // @ts-ignore
-      p.name[lang as 'en' | 'ar']?.toLowerCase().includes(query.toLowerCase())
-    );
+
+  // Filter by category (case-insensitive)
+  if (category) {
+    filtered = filtered.filter(p => p.category?.toLowerCase() === category.toLowerCase());
   }
 
+  // Filter by search query (case-insensitive across both languages)
+  if (query) {
+    const q = query.toLowerCase();
+    filtered = filtered.filter(p => {
+      // @ts-ignore
+      const nameEn = (p.name?.en || '').toLowerCase();
+      // @ts-ignore
+      const nameAr = (p.name?.ar || '').toLowerCase();
+      return nameEn.includes(q) || nameAr.includes(q);
+    });
+  }
+
+  const total = filtered.length;
+  const paginatedProducts = filtered.slice(skip, skip + limit);
+
   return {
-    products: filtered,
-    total: totalCount,
-    hasMore: skip + limit < totalCount
+    products: paginatedProducts,
+    total,
+    hasMore: skip + limit < total
   };
 }
 
@@ -104,7 +164,6 @@ export async function searchProducts(query: string, lang: string = 'ar') {
   const [data, dbPromotions] = await Promise.all([
     prisma.product.findMany({
       where: { is_visible: true },
-      take: 5,
     }),
     prisma.promotion.findMany({
       where: {
@@ -137,12 +196,18 @@ export async function searchProducts(query: string, lang: string = 'ar') {
     price: p.price ? Number(p.price) : undefined,
   })) as any;
 
-  const results = applyPromotionsToProducts(rawResults, activePromotions);
+  const products = applyPromotionsToProducts(rawResults, activePromotions);
 
-  return results.filter(p =>
+  const q = query.toLowerCase();
+  const filtered = products.filter(p => {
     // @ts-ignore
-    p.name[lang as 'en' | 'ar']?.toLowerCase().includes(query.toLowerCase())
-  );
+    const nameEn = (p.name?.en || '').toLowerCase();
+    // @ts-ignore
+    const nameAr = (p.name?.ar || '').toLowerCase();
+    return nameEn.includes(q) || nameAr.includes(q);
+  });
+
+  return filtered.slice(0, 5);
 }
 
 export async function getProductBySlug(slug: string) {

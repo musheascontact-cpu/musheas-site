@@ -171,16 +171,8 @@ export function HeroSection({ dictionary, lang }: HeroSectionProps) {
             <Reveal delay={0.6} className="mt-4 sm:mt-6">
               <motion.div
                 whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-4 p-2 pr-5 rtl:pr-2 rtl:pl-5 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-default select-none"
+                className="flex items-center px-5 py-2.5 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm cursor-default select-none"
               >
-                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                  <svg width="22" height="15" viewBox="0 0 30 20">
-                    <rect width="15" height="20" fill="#006233" />
-                    <rect x="15" width="15" height="20" fill="#fff" />
-                    <path d="M19 10a5 5 0 1 0-7.3 4.5 4 4 0 1 1 0-9 5 5 0 0 0 0 9 5 5 0 0 0 7.3-4.5z" fill="#d21034" />
-                    <path d="M18.5 10l-1.1.8.4-1.3-1.1-.8 1.4 0 .4-1.3.4 1.3 1.4 0-1.1.8.4 1.3-1.1-.8z" fill="#d21034" />
-                  </svg>
-                </div>
                 <div className="flex flex-col">
                   <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
                     {dictionary.hero_algerian_made}

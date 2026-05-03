@@ -27,18 +27,24 @@ export default async function ContactPage({ params: { lang } }: { params: { lang
     const getContent = (key: string, defaultValue: string) => {
         const item = siteContent.find((i: any) => i.key === key);
         if (!item || !item.value) return defaultValue;
-        return (item.value as any)[lang] || (item.value as any)['en'] || defaultValue;
+        if (typeof item.value === 'object' && item.value !== null && !Array.isArray(item.value)) {
+            const val = item.value as Record<string, any>;
+            return val[lang] || val['en'] || defaultValue;
+        }
+        return (item.value as string) || defaultValue;
     };
 
+    // Use footer keys as primary source, fall back to contact-specific keys
     const images = {
         hero: getContent('contact_hero_image', 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop'),
         location: getContent('contact_location_image', 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5ce?q=80&w=1600&auto=format&fit=crop'),
     };
 
+    // Use footer keys as primary source, fall back to contact-specific keys
     const contactInfo = {
-        email: getContent('contact_email_value', 'contact@musheas.com'),
-        phone: getContent('contact_phone_value', '+213 (0) 555 00 00 00'),
-        address: getContent('contact_address_value', isAr ? 'الجزائر العاصمة، الجزائر' : 'Algiers, Algeria'),
+        email: getContent('footer_email', getContent('contact_email_value', 'contact@musheas.com')),
+        phone: getContent('footer_phone', getContent('contact_phone_value', '+213 (0) 555 00 00 00')),
+        address: getContent('footer_address', getContent('contact_address_value', isAr ? 'الجزائر العاصمة، الجزائر' : 'Algiers, Algeria')),
         workingHours: getContent('contact_working_hours', isAr 
             ? 'فريقنا متاح من الأحد إلى الخميس، من الساعة 9 صباحاً حتى 5 مساءً.' 
             : 'Our team is available Sunday to Thursday, 9:00 AM to 5:00 PM.'),

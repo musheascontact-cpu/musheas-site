@@ -5,10 +5,15 @@ import { ProductsTable } from '@/components/dashboard/products-table';
 import { Package } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 
+import { getPaginatedProducts, getDistinctCategories } from '@/actions/products';
+
 export default async function DashboardProducts({ params: { lang } }: { params: { lang: Locale } }) {
-  const products = await prisma.product.findMany({
-    orderBy: { created_at: 'desc' }
-  });
+  const [products, categories] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: { created_at: 'desc' }
+    }),
+    getDistinctCategories('all')
+  ]);
 
   const isAr = lang === 'ar';
 
@@ -34,11 +39,11 @@ export default async function DashboardProducts({ params: { lang } }: { params: 
             </p>
           </div>
         </div>
-        <ProductDialog lang={lang} />
+        <ProductDialog lang={lang} categories={categories} />
       </div>
 
       <ErrorBoundary>
-        <ProductsTable initialProducts={products || []} lang={lang} />
+        <ProductsTable initialProducts={products || []} lang={lang} categories={categories} />
       </ErrorBoundary>
     </div>
   );
