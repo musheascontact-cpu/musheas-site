@@ -14,7 +14,10 @@ import {
   AlertCircle,
   PackageCheck,
   Zap,
-  ShieldCheck
+  ShieldCheck,
+  Minus,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
@@ -47,7 +50,7 @@ import { cn, formatPrice } from '@/lib/utils';
 import { Reveal } from '@/components/ui/reveal';
 
 export default function CheckoutPage() {
-  const { cartItems, cartTotal, clearCart, isCartLoaded, lang, dictionary } =
+  const { cartItems, cartTotal, clearCart, updateQuantity, removeFromCart, isCartLoaded, lang, dictionary } =
     useCart();
   const router = useRouter();
   const currency = dictionary.currency;
@@ -501,41 +504,59 @@ export default function CheckoutPage() {
                 
                 <CardContent className="p-8 pt-4 space-y-8 relative">
                   {/* Items List */}
-                  <div className="space-y-6 max-h-[40vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-white/5">
+                  <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/5">
                     {cartItems.map(item => {
                       const price = item.product.salePrice ?? item.product.price;
                       return (
-                        <div key={item.id} className="flex items-center justify-between group">
-                          <div className="flex items-center gap-5">
-                            <div className="relative h-20 w-20 shrink-0">
-                              <div className="h-full w-full rounded-2xl overflow-hidden border-2 border-white/5 bg-muted shadow-lg group-hover:scale-105 transition-transform duration-500">
-                                <Image
-                                  src={item.product.imageUrl}
-                                  alt={item.product.name[lang as 'en' | 'ar'] ?? item.product.name.en}
-                                  fill
-                                  className="object-cover"
-                                  sizes="80px"
-                                  unoptimized
-                                />
-                              </div>
-                              <span className="absolute -top-2 -right-2 rtl:right-auto rtl:-left-2 z-10 flex h-7 w-7 items-center justify-center rounded-xl bg-primary text-xs font-black text-primary-foreground shadow-xl">
-                                {item.quantity}
-                              </span>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="font-black text-base group-hover:text-primary transition-colors">
-                                {item.product.name[lang as 'en' | 'ar'] ?? item.product.name.en}
-                              </p>
-                              <div className="flex items-baseline gap-2">
-                                <p className="text-sm font-bold text-muted-foreground">
-                                  {formatPrice(price, lang)} {currency}
-                                </p>
-                              </div>
+                        <div key={item.id} className="flex items-center gap-4 p-3 rounded-2xl bg-white/3 border border-white/5 hover:border-white/10 transition-colors group">
+                          <div className="relative h-16 w-16 shrink-0">
+                            <div className="h-full w-full rounded-xl overflow-hidden border border-white/10 bg-muted shadow-md">
+                              <Image
+                                src={item.product.imageUrl}
+                                alt={item.product.name[lang as 'en' | 'ar'] ?? item.product.name.en}
+                                fill
+                                className="object-cover"
+                                sizes="64px"
+                                unoptimized
+                              />
                             </div>
                           </div>
-                          <p className="font-black text-lg">
-                            {formatPrice(price * item.quantity, lang)}
-                          </p>
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <p className="font-black text-sm leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                              {item.product.name[lang as 'en' | 'ar'] ?? item.product.name.en}
+                            </p>
+                            <p className="text-xs font-bold text-muted-foreground">
+                              {formatPrice(price, lang)} {currency}
+                            </p>
+                            {/* Quantity Controls */}
+                            <div className="flex items-center gap-2 mt-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (item.quantity <= 1) removeFromCart(item.product.id);
+                                  else updateQuantity(item.product.id, item.quantity - 1);
+                                }}
+                                className="h-6 w-6 rounded-lg bg-white/10 hover:bg-destructive/20 hover:text-destructive flex items-center justify-center transition-colors"
+                                aria-label="decrease quantity"
+                              >
+                                {item.quantity <= 1 ? <Trash2 className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                              </button>
+                              <span className="text-sm font-black w-6 text-center tabular-nums">{item.quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                className="h-6 w-6 rounded-lg bg-white/10 hover:bg-primary/20 hover:text-primary flex items-center justify-center transition-colors"
+                                aria-label="increase quantity"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-black text-base text-primary">
+                              {formatPrice(price * item.quantity, lang)}
+                            </p>
+                          </div>
                         </div>
                       );
                     })}

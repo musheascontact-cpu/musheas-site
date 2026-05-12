@@ -66,7 +66,6 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
   const currency = dictionary.currency;
   const [imgError, setImgError] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [addedFlash, setAddedFlash] = useState(false);
 
   // Spring scale for image press
   const imageScale = useSpring(1, { stiffness: 400, damping: 22 });
@@ -76,11 +75,10 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
       e.preventDefault();
       e.stopPropagation();
       addToCart(product, 1, false);
-      // Visual feedback flash
-      setAddedFlash(true);
-      setTimeout(() => setAddedFlash(false), 1400);
+      // Navigate to checkout
+      router.push(`/${lang}/checkout`);
     },
-    [addToCart, product]
+    [addToCart, product, router, lang]
   );
 
   const handleLike = useCallback(
@@ -212,43 +210,15 @@ export function ProductCard({ product, className, style, promotion }: ProductCar
                 )}
               </div>
 
-              {/* Add to Cart Button with animated flash feedback */}
+              {/* Buy Now Button - navigates directly to checkout */}
               <motion.button
                 onClick={handleBuyNow}
                 whileTap={{ scale: 0.94 }}
-                className={cn(
-                  "w-full rounded-full h-10 font-bold text-[11px] sm:text-xs transition-all duration-300 flex items-center justify-center gap-1.5 overflow-hidden relative z-20",
-                  addedFlash
-                    ? "bg-green-500 text-white shadow-green-500/30 shadow-lg"
-                    : "bg-primary text-primary-foreground shadow-primary/20 shadow-md hover:bg-primary/90"
-                )}
+                className="w-full rounded-full h-10 font-bold text-[11px] sm:text-xs transition-all duration-300 flex items-center justify-center gap-1.5 overflow-hidden relative z-20 bg-primary text-primary-foreground shadow-primary/20 shadow-md hover:bg-primary/90"
                 style={{ WebkitTapHighlightColor: "transparent" } as React.CSSProperties}
               >
-                <AnimatePresence mode="wait">
-                  {addedFlash ? (
-                    <motion.div
-                      key="check"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="flex items-center gap-1.5"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                      <span>{lang === "ar" ? "تمت الإضافة!" : "Added!"}</span>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="buy"
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      className="flex items-center gap-1.5"
-                    >
-                      <ShoppingCart className="h-3 w-3" />
-                      <span>{dictionary.product_card_add_to_cart}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <ShoppingCart className="h-3 w-3" />
+                <span>{dictionary.product_card_add_to_cart}</span>
               </motion.button>
             </div>
           ) : (
