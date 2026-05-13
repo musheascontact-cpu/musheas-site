@@ -9,6 +9,7 @@ import Image from 'next/image';
 import prisma from '@/lib/prisma';
 import { Product } from '@/lib/types';
 import { HeroSection } from '@/components/home/hero-section';
+import { PartnersSection } from '@/components/home/partners-section';
 import { Reveal } from '@/components/ui/reveal';
 import { getPromotions, Promotion } from '@/actions/promotions';
 import { applyPromotionsToProducts } from '@/lib/promotions-utils';
@@ -109,43 +110,11 @@ export default async function HomePage({ params: { lang } }: { params: { lang: L
         </div>
       </section>
 
-      {partners && partners.length > 0 && (
-        <section id="partners" className="py-20 bg-primary/5 section-optimized">
-          <div className="container mx-auto">
-            <Reveal width="100%" delay={0.1} y={20}>
-              <div className="text-center mb-16">
-                <h2 className="font-headline text-4xl text-primary tracking-wider">{dictionary.partners_section_title}</h2>
-                <p className="text-white/70 max-w-2xl mt-2 mx-auto text-lg font-light">{dictionary.partners_section_description}</p>
-              </div>
-            </Reveal>
-            <div className="flex flex-wrap items-center justify-center gap-x-20 gap-y-12">
-              {partners.map((partner, i) => (
-                <Reveal key={partner.id} delay={0.1 + (i * 0.05)} y={10}>
-                  {partner.website_url ? (
-                    <Link href={partner.website_url} target="_blank" rel="noopener noreferrer" className="block group">
-                       <Image
-                        src={partner.logo_url}
-                        alt={partner.name}
-                        width={160}
-                        height={80}
-                        className="object-contain filter grayscale brightness-200 contrast-0 transition-all duration-500 group-hover:grayscale-0 group-hover:brightness-100 group-hover:contrast-100 group-hover:scale-110"
-                      />
-                    </Link>
-                  ) : (
-                    <Image
-                      src={partner.logo_url}
-                      alt={partner.name}
-                      width={160}
-                      height={80}
-                      className="object-contain filter grayscale brightness-200 contrast-0 transition-all duration-500 hover:grayscale-0 hover:brightness-100 hover:contrast-100 hover:scale-110"
-                    />
-                  )}
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <PartnersSection
+        partners={partners as any[]}
+        title={dictionary.partners_section_title}
+        description={dictionary.partners_section_description}
+      />
 
        <section id="shop" className="py-20 bg-card/10 section-optimized">
         <div className="container mx-auto">
